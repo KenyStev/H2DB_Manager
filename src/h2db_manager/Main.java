@@ -5,6 +5,15 @@
  */
 package h2db_manager;
 
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
+
 /**
  *
  * @author Kenystev
@@ -16,6 +25,13 @@ public class Main extends javax.swing.JFrame {
      */
     public Main() {
         initComponents();
+        this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        //create the root node
+        DefaultMutableTreeNode root = null;//new DefaultMutableTreeNode("Root");
+        
+        //create the tree by passing in the root node
+        ConnectionsTree = new JTree(root);
+        jScrollPane3.setViewportView(ConnectionsTree);
     }
 
     /**
@@ -27,21 +43,124 @@ public class Main extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jLayeredPane1 = new javax.swing.JLayeredPane();
+        jToolBar1 = new javax.swing.JToolBar();
+        jSplitPane1 = new javax.swing.JSplitPane();
+        TabOptions = new javax.swing.JTabbedPane();
+        jPanel1 = new javax.swing.JPanel();
+        ConnectionOptionsPane = new javax.swing.JLayeredPane();
+        jLabel1 = new javax.swing.JLabel();
+        btnAddConnection = new javax.swing.JButton();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        ConnectionsTree = new javax.swing.JTree();
+        jMenuBar2 = new javax.swing.JMenuBar();
+        jMenu4 = new javax.swing.JMenu();
+        jMenu5 = new javax.swing.JMenu();
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jToolBar1.setRollover(true);
+
+        jLayeredPane1.setLayer(jToolBar1, javax.swing.JLayeredPane.DEFAULT_LAYER);
+
+        javax.swing.GroupLayout jLayeredPane1Layout = new javax.swing.GroupLayout(jLayeredPane1);
+        jLayeredPane1.setLayout(jLayeredPane1Layout);
+        jLayeredPane1Layout.setHorizontalGroup(
+            jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jLayeredPane1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jLayeredPane1Layout.setVerticalGroup(
+            jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jLayeredPane1Layout.createSequentialGroup()
+                .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 11, Short.MAX_VALUE))
+        );
+
+        jSplitPane1.setDividerLocation(200);
+        jSplitPane1.setRightComponent(TabOptions);
+
+        jLabel1.setText("Connections");
+
+        btnAddConnection.setText("+");
+        btnAddConnection.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddConnectionActionPerformed(evt);
+            }
+        });
+
+        ConnectionOptionsPane.setLayer(jLabel1, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        ConnectionOptionsPane.setLayer(btnAddConnection, javax.swing.JLayeredPane.DEFAULT_LAYER);
+
+        javax.swing.GroupLayout ConnectionOptionsPaneLayout = new javax.swing.GroupLayout(ConnectionOptionsPane);
+        ConnectionOptionsPane.setLayout(ConnectionOptionsPaneLayout);
+        ConnectionOptionsPaneLayout.setHorizontalGroup(
+            ConnectionOptionsPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(ConnectionOptionsPaneLayout.createSequentialGroup()
+                .addGroup(ConnectionOptionsPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1)
+                    .addComponent(btnAddConnection))
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+        ConnectionOptionsPaneLayout.setVerticalGroup(
+            ConnectionOptionsPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(ConnectionOptionsPaneLayout.createSequentialGroup()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnAddConnection))
+        );
+
+        jScrollPane3.setViewportView(ConnectionsTree);
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(ConnectionOptionsPane, javax.swing.GroupLayout.Alignment.TRAILING)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(ConnectionOptionsPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE))
+        );
+
+        jSplitPane1.setTopComponent(jPanel1);
+
+        jMenu4.setText("File");
+        jMenuBar2.add(jMenu4);
+
+        jMenu5.setText("Edit");
+        jMenuBar2.add(jMenu5);
+
+        setJMenuBar(jMenuBar2);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addComponent(jLayeredPane1, javax.swing.GroupLayout.Alignment.TRAILING)
+            .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 934, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jLayeredPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSplitPane1))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnAddConnectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddConnectionActionPerformed
+        CreateNewConnectionForm c = new CreateNewConnectionForm(this,true);
+        c.setVisible(true);        
+    }//GEN-LAST:event_btnAddConnectionActionPerformed
 
     /**
      * @param args the command line arguments
@@ -79,5 +198,18 @@ public class Main extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLayeredPane ConnectionOptionsPane;
+    private javax.swing.JTree ConnectionsTree;
+    private javax.swing.JTabbedPane TabOptions;
+    private javax.swing.JButton btnAddConnection;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLayeredPane jLayeredPane1;
+    private javax.swing.JMenu jMenu4;
+    private javax.swing.JMenu jMenu5;
+    private javax.swing.JMenuBar jMenuBar2;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JToolBar jToolBar1;
     // End of variables declaration//GEN-END:variables
 }

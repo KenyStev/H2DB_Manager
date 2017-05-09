@@ -5,6 +5,8 @@
  */
 package h2db_manager;
 
+import java.sql.*;
+
 /**
  *
  * @author Kenystev
@@ -15,7 +17,12 @@ public class H2DB_Manager {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // TODO code application logic here
+        
+    }
+
+    static Connection getConnection(String url, String user, String pass) throws SQLException {
+        Connection conn = DriverManager.getConnection("jdbc:h2:tcp:"+url, user,pass);
+        return conn;
     }
     
 }
