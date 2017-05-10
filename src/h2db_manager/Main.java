@@ -5,20 +5,40 @@
  */
 package h2db_manager;
 
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Collection;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.scene.input.MouseButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 
 /**
  *
  * @author Kenystev
  */
 public class Main extends javax.swing.JFrame {
+
+    private HashMap<String, ConnectionData> map;
+    private DefaultMutableTreeNode root;
 
     /**
      * Creates new form Main
@@ -27,11 +47,33 @@ public class Main extends javax.swing.JFrame {
         initComponents();
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         //create the root node
-        DefaultMutableTreeNode root = null;//new DefaultMutableTreeNode("Root");
-        
+        root = new DefaultMutableTreeNode("Connections");
+//        DefaultMutableTreeNode leaf = new DefaultMutableTreeNode("Leaf");
+//        root.add(leaf);
         //create the tree by passing in the root node
         ConnectionsTree = new JTree(root);
         jScrollPane3.setViewportView(ConnectionsTree);
+        map = new HashMap<String,ConnectionData>();
+        
+//        ConnectionsTree.addTreeSelectionListener(new TreeSelectionListener() {
+//            @Override
+//            public void valueChanged(TreeSelectionEvent tse) {
+//                DefaultMutableTreeNode node = (DefaultMutableTreeNode)ConnectionsTree.getLastSelectedPathComponent();
+//                System.out.println(node);
+//            }
+//        });
+//        MouseAdapter c = new MouseAdapter(){
+//            @Override
+//            public void mouseClicked(MouseEvent me) {
+//                DefaultMutableTreeNode node = (DefaultMutableTreeNode)ConnectionsTree.getLastSelectedPathComponent();
+//                if(SwingUtilities.isRightMouseButton(me))
+//                {
+//                    
+//                }
+//            }
+//            
+//        };
+//        ConnectionsTree.addMouseListener(c);
     }
 
     /**
@@ -51,6 +93,7 @@ public class Main extends javax.swing.JFrame {
         ConnectionOptionsPane = new javax.swing.JLayeredPane();
         jLabel1 = new javax.swing.JLabel();
         btnAddConnection = new javax.swing.JButton();
+        btnCloseConnection = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
         ConnectionsTree = new javax.swing.JTree();
         jMenuBar2 = new javax.swing.JMenuBar();
@@ -58,6 +101,11 @@ public class Main extends javax.swing.JFrame {
         jMenu5 = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         jToolBar1.setRollover(true);
 
@@ -91,8 +139,16 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
+        btnCloseConnection.setText("Close");
+        btnCloseConnection.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCloseConnectionActionPerformed(evt);
+            }
+        });
+
         ConnectionOptionsPane.setLayer(jLabel1, javax.swing.JLayeredPane.DEFAULT_LAYER);
         ConnectionOptionsPane.setLayer(btnAddConnection, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        ConnectionOptionsPane.setLayer(btnCloseConnection, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
         javax.swing.GroupLayout ConnectionOptionsPaneLayout = new javax.swing.GroupLayout(ConnectionOptionsPane);
         ConnectionOptionsPane.setLayout(ConnectionOptionsPaneLayout);
@@ -101,15 +157,20 @@ public class Main extends javax.swing.JFrame {
             .addGroup(ConnectionOptionsPaneLayout.createSequentialGroup()
                 .addGroup(ConnectionOptionsPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel1)
-                    .addComponent(btnAddConnection))
-                .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(ConnectionOptionsPaneLayout.createSequentialGroup()
+                        .addComponent(btnAddConnection)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnCloseConnection)))
+                .addGap(0, 91, Short.MAX_VALUE))
         );
         ConnectionOptionsPaneLayout.setVerticalGroup(
             ConnectionOptionsPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(ConnectionOptionsPaneLayout.createSequentialGroup()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btnAddConnection))
+                .addGroup(ConnectionOptionsPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnAddConnection)
+                    .addComponent(btnCloseConnection)))
         );
 
         jScrollPane3.setViewportView(ConnectionsTree);
@@ -119,7 +180,7 @@ public class Main extends javax.swing.JFrame {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(ConnectionOptionsPane, javax.swing.GroupLayout.Alignment.TRAILING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
+            .addComponent(jScrollPane3)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -159,8 +220,36 @@ public class Main extends javax.swing.JFrame {
 
     private void btnAddConnectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddConnectionActionPerformed
         CreateNewConnectionForm c = new CreateNewConnectionForm(this,true);
-        c.setVisible(true);        
+        c.setVisible(true);
     }//GEN-LAST:event_btnAddConnectionActionPerformed
+
+    private void btnCloseConnectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseConnectionActionPerformed
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode)ConnectionsTree.getLastSelectedPathComponent();
+        if(node != null && map.containsKey(node.toString()))
+        {
+            ConnectionData cd =  map.get(node.toString());
+            try {
+                cd.Close();
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Something went wrong",JOptionPane.ERROR_MESSAGE);
+            }
+            map.remove(node.toString());
+            root.remove(node);
+            ((DefaultTreeModel)ConnectionsTree.getModel()).reload(root);
+            System.out.println("Deleted");
+        }
+    }//GEN-LAST:event_btnCloseConnectionActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        for(ConnectionData c : map.values()){
+            try {
+                c.Close();
+            } catch (SQLException ex) {
+                
+            }
+        }
+        
+    }//GEN-LAST:event_formWindowClosing
 
     /**
      * @param args the command line arguments
@@ -202,6 +291,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JTree ConnectionsTree;
     private javax.swing.JTabbedPane TabOptions;
     private javax.swing.JButton btnAddConnection;
+    private javax.swing.JButton btnCloseConnection;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JMenu jMenu4;
@@ -212,4 +302,24 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JToolBar jToolBar1;
     // End of variables declaration//GEN-END:variables
+
+    void addConnection(String cn,String user, Connection conn) {
+        if(map.containsKey(cn))
+        {
+            JOptionPane.showMessageDialog(this, "Connection Name already exist", "Something went wrong",JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        
+        map.put(cn, new ConnectionData(cn,user,conn));
+        root.add(map.get(cn).getTreeNode());
+        ((DefaultTreeModel)ConnectionsTree.getModel()).reload(root);
+        
+        try (Statement stat = conn.createStatement(); ResultSet rs = stat.executeQuery("select * from information_schema.users")) {
+            while (rs.next()) {
+                System.out.println(rs.getString("name"));
+            }
+        }catch(Exception e){
+            
+        }
+    }
 }

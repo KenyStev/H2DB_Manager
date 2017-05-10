@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -24,6 +25,7 @@ public class CreateNewConnectionForm extends javax.swing.JDialog {
     public CreateNewConnectionForm(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        txtUrl.setText("//localhost/~/");
     }
 
     /**
@@ -58,6 +60,11 @@ public class CreateNewConnectionForm extends javax.swing.JDialog {
         });
 
         btnCancelConection.setText("Cancel");
+        btnCancelConection.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCancelConectionActionPerformed(evt);
+            }
+        });
 
         jLayeredPane1.setLayer(btnConnect, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayeredPane1.setLayer(btnCancelConection, javax.swing.JLayeredPane.DEFAULT_LAYER);
@@ -172,18 +179,17 @@ public class CreateNewConnectionForm extends javax.swing.JDialog {
         {
             try {
                 Connection conn = H2DB_Manager.getConnection(url,user,pass);
-                Statement stmt =  conn.createStatement();
-                try (ResultSet rs = stmt.executeQuery("select * from information_schema.users")) {
-                    while (rs.next()) {
-                        System.out.println(rs.getString("name"));
-                    }
-                }
-                conn.close();
+                ((Main)getParent()).addConnection(cn,user,conn);
+                this.dispose();
             } catch (SQLException ex) {
-                Logger.getLogger(CreateNewConnectionForm.class.getName()).log(Level.SEVERE, null, ex);
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Something went wrong",JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_btnConnectActionPerformed
+
+    private void btnCancelConectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelConectionActionPerformed
+        this.dispose();
+    }//GEN-LAST:event_btnCancelConectionActionPerformed
 
     /**
      * @param args the command line arguments

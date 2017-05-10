@@ -24,5 +24,17 @@ public class H2DB_Manager {
         Connection conn = DriverManager.getConnection("jdbc:h2:tcp:"+url, user,pass);
         return conn;
     }
+
+    static ResultSet getSchemasFor(Connection conn, String user) throws SQLException {
+        Statement stmt = conn.createStatement();
+        return stmt.executeQuery("select SCHEMA_NAME from information_schema.schemata WHERE SCHEMA_OWNER = '"+user.toUpperCase()+"';");
+    }
+
+    static ResultSet getTablesFor(Connection connection, String user) throws SQLException {
+        Statement stmt = connection.createStatement();
+        return stmt.executeQuery("select S.SCHEMA_NAME, t.TABLE_NAME from information_schema.schemata S\n" +
+"      inner join information_schema.tables T on T.TABLE_SCHEMA = S.SCHEMA_NAME\n" +
+"        WHERE SCHEMA_OWNER = '"+user.toUpperCase()+"';");
+    }
     
 }
