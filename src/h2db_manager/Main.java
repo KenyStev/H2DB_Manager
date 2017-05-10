@@ -5,6 +5,13 @@
  */
 package h2db_manager;
 
+import java.awt.Component;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.InputMethodEvent;
+import java.awt.event.InputMethodListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -19,17 +26,25 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.scene.input.MouseButton;
+import javafx.scene.layout.GridPane;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+import org.h2.table.Table;
 
 /**
  *
@@ -39,6 +54,8 @@ public class Main extends javax.swing.JFrame {
 
     private HashMap<String, ConnectionData> map;
     private DefaultMutableTreeNode root;
+    private JTable columnsPane;
+    private JScrollPane scrollpaneColumns;
 
     /**
      * Creates new form Main
@@ -48,12 +65,51 @@ public class Main extends javax.swing.JFrame {
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         //create the root node
         root = new DefaultMutableTreeNode("Connections");
-//        DefaultMutableTreeNode leaf = new DefaultMutableTreeNode("Leaf");
-//        root.add(leaf);
+
         //create the tree by passing in the root node
         ConnectionsTree = new JTree(root);
+        ConnectionsTree.addTreeSelectionListener(new TreeSelectionListener() {
+            @Override
+            public void valueChanged(TreeSelectionEvent tse) {
+                updateColumnsTables();
+            }
+        });
+        
         jScrollPane3.setViewportView(ConnectionsTree);
         map = new HashMap<String,ConnectionData>();
+        
+        scrollpaneColumns = new JScrollPane();
+//        columnsPane = new JTable();
+        
+        TabOptions.addTab("Columns", scrollpaneColumns);
+        TabOptions.addTab("Data", new JPanel());
+        TabOptions.addTab("SQL", new JPanel());
+        
+        TabOptions.addChangeListener(new ChangeListener() {
+            
+            @Override
+            public void stateChanged(ChangeEvent ce) {
+                updateColumnsTables();
+//                System.out.println(TabOptions.getSelectedIndex());
+//                System.out.println(TabOptions.getTitleAt(TabOptions.getSelectedIndex()));
+//                JScrollPane jscrollpane = new JScrollPane();
+//                JTable jTable1 = new JTable();
+//                jTable1.setModel(new javax.swing.table.DefaultTableModel(
+//                    new Object [][] {
+//                        {null, null, null, null},
+//                        {null, null, null, null},
+//                        {null, null, null, null},
+//                        {null, null, null, null}
+//                    },
+//                    new String [] {
+//                        "Title 1", "Title 2", "Title 3", "Title 4"
+//                    }
+//                ));
+//                jscrollpane.setViewportView(jTable1);
+//                columnsPane.removeAll();
+//                columnsPane.add(jscrollpane);
+            }
+        });
         
 //        ConnectionsTree.addTreeSelectionListener(new TreeSelectionListener() {
 //            @Override
@@ -161,7 +217,7 @@ public class Main extends javax.swing.JFrame {
                         .addComponent(btnAddConnection)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnCloseConnection)))
-                .addGap(0, 91, Short.MAX_VALUE))
+                .addGap(0, 93, Short.MAX_VALUE))
         );
         ConnectionOptionsPaneLayout.setVerticalGroup(
             ConnectionOptionsPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -212,7 +268,7 @@ public class Main extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jLayeredPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSplitPane1))
+                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE))
         );
 
         pack();
@@ -243,6 +299,7 @@ public class Main extends javax.swing.JFrame {
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         for(ConnectionData c : map.values()){
             try {
+                System.out.println("Closing: "+c.getTreeNode());
                 c.Close();
             } catch (SQLException ex) {
                 
@@ -251,6 +308,35 @@ public class Main extends javax.swing.JFrame {
         
     }//GEN-LAST:event_formWindowClosing
 
+    private void updateColumnsTables() {
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode)ConnectionsTree.getLastSelectedPathComponent();
+        if(node != null && node.getLevel()==5){
+            System.out.println("parent: "+node.getParent());
+            System.out.println("Node: "+node);
+            for(TreeNode t : node.getPath())
+                System.out.println("--> "+t);
+            
+            System.out.println(node.getLevel());
+            
+            if("Tables".equals(node.getParent().toString())){
+                ConnectionData conn = map.get(node.getPath()[1].toString());
+                try(ResultSet rs = H2DB_Manager.getColumnsForTable(conn.getConnection(),node.getPath()[3].toString(),node.getPath()[5].toString());){
+                    columnsPane = new JTable(ConnectionData.buildTableModel(rs));
+                    scrollpaneColumns.setViewportView(columnsPane);
+                }catch(SQLException ex){
+                    
+                }
+            }else if("Indexes".equals(node.getParent().toString())){
+                ConnectionData conn = map.get(node.getPath()[1].toString());
+                try(ResultSet rs = H2DB_Manager.getColumnsForIndex(conn.getConnection(),node.getPath()[3].toString(),node.getPath()[5].toString());){
+                    columnsPane = new JTable(ConnectionData.buildTableModel(rs));
+                    scrollpaneColumns.setViewportView(columnsPane);
+                }catch(SQLException ex){
+                    
+                }
+            }
+        }
+    }
     /**
      * @param args the command line arguments
      */
