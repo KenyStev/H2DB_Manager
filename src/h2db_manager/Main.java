@@ -12,9 +12,12 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextPane;
 import javax.swing.JTree;
@@ -22,6 +25,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.text.LayeredHighlighter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -39,6 +43,13 @@ public class Main extends javax.swing.JFrame {
     private JScrollPane scrollpaneData;
     private JScrollPane scrollpaneDDL;
     private JTextPane ShowSQLtextPlane;
+    private JSplitPane SQLSplitSection;
+    private JTextPane SQLCommandsPane;
+    private JLayeredPane SQLOutputLayer;
+    private JScrollPane SQLOutputScroll;
+    private JTable SQLOutput;
+    private JButton btnEditData;
+    private JScrollPane SQLCommandsScroll;
 
     /**
      * Creates new form Main
@@ -67,6 +78,10 @@ public class Main extends javax.swing.JFrame {
         scrollpaneData = new JScrollPane();
         scrollpaneDDL = new JScrollPane();
         scrollpaneDDL.setViewportView(ShowSQLtextPlane);
+        
+        initSQLSection();
+        
+        TabOptions.addTab("SQL", SQLSplitSection);
         TabOptions.addTab("Columns", scrollpaneColumns);
         TabOptions.addTab("Data", scrollpaneData);
         TabOptions.addTab("DDL", scrollpaneDDL);
@@ -90,7 +105,6 @@ public class Main extends javax.swing.JFrame {
     private void initComponents() {
 
         jLayeredPane1 = new javax.swing.JLayeredPane();
-        jToolBar1 = new javax.swing.JToolBar();
         jSplitPane1 = new javax.swing.JSplitPane();
         TabOptions = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
@@ -111,24 +125,15 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
-        jToolBar1.setRollover(true);
-
-        jLayeredPane1.setLayer(jToolBar1, javax.swing.JLayeredPane.DEFAULT_LAYER);
-
         javax.swing.GroupLayout jLayeredPane1Layout = new javax.swing.GroupLayout(jLayeredPane1);
         jLayeredPane1.setLayout(jLayeredPane1Layout);
         jLayeredPane1Layout.setHorizontalGroup(
             jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jLayeredPane1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGap(0, 934, Short.MAX_VALUE)
         );
         jLayeredPane1Layout.setVerticalGroup(
             jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jLayeredPane1Layout.createSequentialGroup()
-                .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 11, Short.MAX_VALUE))
+            .addGap(0, 36, Short.MAX_VALUE)
         );
 
         jSplitPane1.setDividerLocation(200);
@@ -216,7 +221,7 @@ public class Main extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jLayeredPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE))
+                .addComponent(jSplitPane1))
         );
 
         pack();
@@ -303,8 +308,6 @@ public class Main extends javax.swing.JFrame {
                 }finally{
                     sql+=";";
                 }
-//                ShowSQLtextPlane.setText(sql);
-//                scrollpaneDDL.setViewportView(ShowSQLtextPlane);
             }else if("Tables".equals(node.getParent().toString())){
                 try(ResultSet rs = H2DB_Manager.getDDLForTable(map.get(node.getPath()[1].toString()).getConnection()
                         ,node.getPath()[3].toString(),node.getPath()[5].toString())){
@@ -373,7 +376,6 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSplitPane jSplitPane1;
-    private javax.swing.JToolBar jToolBar1;
     // End of variables declaration//GEN-END:variables
 
     void addConnection(String cn,String user, Connection conn) {
@@ -394,5 +396,51 @@ public class Main extends javax.swing.JFrame {
         }catch(SQLException ex){
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Something went wrong",JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void initSQLSection() {
+        SQLSplitSection = new javax.swing.JSplitPane();
+        SQLCommandsScroll = new javax.swing.JScrollPane();
+        SQLCommandsPane = new javax.swing.JTextPane();
+        SQLOutputLayer = new javax.swing.JLayeredPane();
+        SQLOutputScroll = new javax.swing.JScrollPane();
+        SQLOutput = new javax.swing.JTable();
+        btnEditData = new javax.swing.JButton();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        SQLSplitSection.setDividerLocation(400);
+        SQLSplitSection.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        SQLSplitSection.setMinimumSize(new java.awt.Dimension(500, 1000));
+
+        SQLCommandsScroll.setViewportView(SQLCommandsPane);
+
+        SQLSplitSection.setTopComponent(SQLCommandsScroll);
+
+        SQLOutputScroll.setViewportView(SQLOutput);
+
+        btnEditData.setText("Edit");
+
+        SQLOutputLayer.setLayer(SQLOutputScroll, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        SQLOutputLayer.setLayer(btnEditData, javax.swing.JLayeredPane.DEFAULT_LAYER);
+
+        javax.swing.GroupLayout jLayeredPane3Layout = new javax.swing.GroupLayout(SQLOutputLayer);
+        SQLOutputLayer.setLayout(jLayeredPane3Layout);
+        jLayeredPane3Layout.setHorizontalGroup(
+            jLayeredPane3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(SQLOutputScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
+            .addGroup(jLayeredPane3Layout.createSequentialGroup()
+                .addComponent(btnEditData)
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+        jLayeredPane3Layout.setVerticalGroup(
+            jLayeredPane3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jLayeredPane3Layout.createSequentialGroup()
+                .addComponent(btnEditData)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(SQLOutputScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE))
+        );
+
+        SQLSplitSection.setRightComponent(SQLOutputLayer);
     }
 }
