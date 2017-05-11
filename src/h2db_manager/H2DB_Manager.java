@@ -151,5 +151,10 @@ public class H2DB_Manager {
         Statement stmt = connection.createStatement();
         return stmt.executeQuery("show columns from "+table+" FROM "+schema+";");
     }
+
+    static ResultSet getDataFromView(Connection connection, String schema, String table) throws SQLException {
+        Statement stmt = connection.createStatement();
+        return stmt.executeQuery("select * from "+schema+"."+table+";");
+    }
     
 }

@@ -408,6 +408,15 @@ public class Main extends javax.swing.JFrame {
                     JOptionPane.showMessageDialog(this, ex.getMessage(), "Something went wrong",JOptionPane.ERROR_MESSAGE);
                 }
                 
+            }else if("Views".equals(node.getParent().toString())){
+                try(ResultSet rs = H2DB_Manager.getDataFromView(map.get(node.getPath()[1].toString()).getConnection()
+                        ,node.getPath()[3].toString(),node.getPath()[5].toString())){
+                    dataFromTable = new JTable(ConnectionData.buildTableModel(rs));
+                    scrollpaneData.setViewportView(dataFromTable);
+                }catch(SQLException ex){
+                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Something went wrong",JOptionPane.ERROR_MESSAGE);
+                }
+                
             }
         }
     }
