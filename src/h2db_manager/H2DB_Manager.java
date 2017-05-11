@@ -106,5 +106,10 @@ public class H2DB_Manager {
         stmt.execute(sql);
         return stmt;
     }
+
+    static ResultSet getDataFromTable(Connection connection, String schema, String table) throws SQLException {
+        Statement stmt = connection.createStatement();
+        return stmt.executeQuery("select * from "+schema+"."+table+";");
+    }
     
 }

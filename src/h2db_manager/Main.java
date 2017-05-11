@@ -51,6 +51,7 @@ public class Main extends javax.swing.JFrame {
     private JTable SQLOutput;
     private JButton btnEditData;
     private JScrollPane SQLCommandsScroll;
+    private JTable dataFromTable;
 
     /**
      * Creates new form Main
@@ -68,6 +69,7 @@ public class Main extends javax.swing.JFrame {
             public void valueChanged(TreeSelectionEvent tse) {
                 updateColumnsTables();
                 updateShowSQL();
+                updateDataTabFromTable();
             }
         });
         
@@ -285,7 +287,6 @@ public class Main extends javax.swing.JFrame {
             try(Statement stmt = H2DB_Manager.executeQuery(conn.getConnection(),sql);){
                 if(stmt.getUpdateCount()>=0){
                     JLabel msg = new JLabel("Successfully executed query: "+sql);
-//                    msg.set
                     SQLOutputScroll.setViewportView(msg);
                     conn.initDataBaseObjects();
                     ((DefaultTreeModel)ConnectionsTree.getModel()).reload(conn.getTreeNode());
@@ -366,6 +367,22 @@ public class Main extends javax.swing.JFrame {
             }
         }
         ShowSQLtextPlane.setText(sql);
+    }
+    
+    private void updateDataTabFromTable() {
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode)ConnectionsTree.getLastSelectedPathComponent();
+        if(node!=null && node.getParent() != null){
+            if("Tables".equals(node.getParent().toString())){
+                try(ResultSet rs = H2DB_Manager.getDataFromTable(map.get(node.getPath()[1].toString()).getConnection()
+                        ,node.getPath()[3].toString(),node.getPath()[5].toString())){
+                    dataFromTable = new JTable(ConnectionData.buildTableModel(rs));
+                    scrollpaneData.setViewportView(dataFromTable);
+                }catch(SQLException ex){
+                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Something went wrong",JOptionPane.ERROR_MESSAGE);
+                }
+                
+            }
+        }
     }
     
     public static void main(String args[]) {
