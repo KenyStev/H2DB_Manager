@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
@@ -105,6 +106,7 @@ public class Main extends javax.swing.JFrame {
     private void initComponents() {
 
         jLayeredPane1 = new javax.swing.JLayeredPane();
+        btnPlayQuery = new javax.swing.JButton();
         jSplitPane1 = new javax.swing.JSplitPane();
         TabOptions = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
@@ -125,18 +127,32 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
+        btnPlayQuery.setText("Play");
+        btnPlayQuery.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPlayQueryActionPerformed(evt);
+            }
+        });
+
+        jLayeredPane1.setLayer(btnPlayQuery, javax.swing.JLayeredPane.DEFAULT_LAYER);
+
         javax.swing.GroupLayout jLayeredPane1Layout = new javax.swing.GroupLayout(jLayeredPane1);
         jLayeredPane1.setLayout(jLayeredPane1Layout);
         jLayeredPane1Layout.setHorizontalGroup(
             jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 934, Short.MAX_VALUE)
+            .addGroup(jLayeredPane1Layout.createSequentialGroup()
+                .addComponent(btnPlayQuery)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         jLayeredPane1Layout.setVerticalGroup(
             jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 36, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jLayeredPane1Layout.createSequentialGroup()
+                .addGap(0, 13, Short.MAX_VALUE)
+                .addComponent(btnPlayQuery))
         );
 
         jSplitPane1.setDividerLocation(200);
+        jSplitPane1.setOneTouchExpandable(true);
         jSplitPane1.setRightComponent(TabOptions);
 
         jLabel1.setText("Connections");
@@ -261,6 +277,28 @@ public class Main extends javax.swing.JFrame {
         
     }//GEN-LAST:event_formWindowClosing
 
+    private void btnPlayQueryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPlayQueryActionPerformed
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode)ConnectionsTree.getLastSelectedPathComponent();
+        if(node!=null && node.getLevel()>=1){
+            ConnectionData conn = map.get(node.getPath()[1].toString());
+            String sql = SQLCommandsPane.getText();
+            try(Statement stmt = H2DB_Manager.executeQuery(conn.getConnection(),sql);){
+                if(stmt.getUpdateCount()>=0){
+                    JLabel msg = new JLabel("Successfully executed query: "+sql);
+//                    msg.set
+                    SQLOutputScroll.setViewportView(msg);
+                    conn.initDataBaseObjects();
+                    ((DefaultTreeModel)ConnectionsTree.getModel()).reload(conn.getTreeNode());
+                }else{
+                    SQLOutput = new JTable(ConnectionData.buildTableModel(stmt.getResultSet()));
+                    SQLOutputScroll.setViewportView(SQLOutput);
+                }
+            }catch(SQLException ex){
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Something went wrong",JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }//GEN-LAST:event_btnPlayQueryActionPerformed
+
     private void updateColumnsTables() {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode)ConnectionsTree.getLastSelectedPathComponent();
         if(node != null && node.getLevel()==5){
@@ -304,7 +342,7 @@ public class Main extends javax.swing.JFrame {
                         sql+=" AUTHORIZATION "+user;
                     
                 } catch (SQLException ex) {
-                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Something went wrong",JOptionPane.ERROR_MESSAGE);
                 }finally{
                     sql+=";";
                 }
@@ -314,7 +352,7 @@ public class Main extends javax.swing.JFrame {
                     if(rs.next())
                         sql = rs.getString("SQL") +";";
                 }catch(SQLException ex){
-                    
+                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Something went wrong",JOptionPane.ERROR_MESSAGE);
                 }
                 
             }else if("Indexes".equals(node.getParent().toString())){
@@ -323,7 +361,7 @@ public class Main extends javax.swing.JFrame {
                     if(rs.next())
                         sql = rs.getString("SQL")+";";
                 }catch(SQLException ex){
-                    
+                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Something went wrong",JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
@@ -368,6 +406,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JTabbedPane TabOptions;
     private javax.swing.JButton btnAddConnection;
     private javax.swing.JButton btnCloseConnection;
+    private javax.swing.JButton btnPlayQuery;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JMenu jMenu4;
@@ -411,7 +450,7 @@ public class Main extends javax.swing.JFrame {
 
         SQLSplitSection.setDividerLocation(400);
         SQLSplitSection.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        SQLSplitSection.setMinimumSize(new java.awt.Dimension(500, 1000));
+        SQLSplitSection.setMinimumSize(new java.awt.Dimension(500, TabOptions.getHeight()));
 
         SQLCommandsScroll.setViewportView(SQLCommandsPane);
 

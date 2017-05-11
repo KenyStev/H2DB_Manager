@@ -33,10 +33,7 @@ public class ConnectionData {
         connectionName = cn;
         connection = conn;
         this.user = user;
-        
-        schemasMap = new HashMap<String,DefaultMutableTreeNode>();
-        
-        treeNode = new DefaultMutableTreeNode(cn);
+        treeNode = new DefaultMutableTreeNode(connectionName);
         this.initDataBaseObjects();
     }
 
@@ -74,7 +71,9 @@ public class ConnectionData {
 
     }
 
-        private void initDataBaseObjects() {
+        public void initDataBaseObjects() {
+            schemasMap = new HashMap<>();
+            treeNode.removeAllChildren();
             initSchemas();
             initTables();
             initIndexes();

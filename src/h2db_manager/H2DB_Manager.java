@@ -100,5 +100,11 @@ public class H2DB_Manager {
 "AND TABLE_SCHEMA = '"+schema+"' \n" +
 "AND INDEX_NAME = '"+index+"';");
     }
+
+    static Statement executeQuery(Connection connection, String sql) throws SQLException {
+        Statement stmt = connection.createStatement();
+        stmt.execute(sql);
+        return stmt;
+    }
     
 }
