@@ -25,7 +25,9 @@ public class CreateNewConnectionForm extends javax.swing.JDialog {
     public CreateNewConnectionForm(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
-        txtUrl.setText("//localhost/~/");
+        txtConnctionName.setText("Prueba");
+        txtUrl.setText("//localhost/~/test2");
+        txtUser.setText("kenystev");
     }
 
     /**

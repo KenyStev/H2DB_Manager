@@ -28,11 +28,23 @@ public class H2DB_Manager {
 
     static ResultSet getSchemasFor(Connection conn, String user) throws SQLException {
         Statement stmt = conn.createStatement();
+        
+        ResultSet rs = stmt.executeQuery("select SCHEMA_OWNER from information_schema.schemata WHERE SCHEMA_NAME = 'PUBLIC';");
+        if(rs.next() && rs.getString("SCHEMA_OWNER").equals(user.toUpperCase()))
+            return stmt.executeQuery("select SCHEMA_NAME from information_schema.schemata where SCHEMA_NAME != 'PUBLIC';");
+        
         return stmt.executeQuery("select SCHEMA_NAME from information_schema.schemata WHERE SCHEMA_OWNER = '"+user.toUpperCase()+"';");
     }
 
     static ResultSet getTablesFor(Connection connection, String user) throws SQLException {
         Statement stmt = connection.createStatement();
+        
+        ResultSet rs = stmt.executeQuery("select SCHEMA_OWNER from information_schema.schemata WHERE SCHEMA_NAME = 'PUBLIC';");
+        if(rs.next() && rs.getString("SCHEMA_OWNER").equals(user.toUpperCase()))
+            return stmt.executeQuery("select S.SCHEMA_NAME, t.TABLE_NAME from information_schema.schemata S\n" +
+"      inner join information_schema.tables T on T.TABLE_SCHEMA = S.SCHEMA_NAME\n" +
+"        WHERE SCHEMA_NAME != 'PUBLIC';");
+        
         return stmt.executeQuery("select S.SCHEMA_NAME, t.TABLE_NAME from information_schema.schemata S\n" +
 "      inner join information_schema.tables T on T.TABLE_SCHEMA = S.SCHEMA_NAME\n" +
 "        WHERE SCHEMA_OWNER = '"+user.toUpperCase()+"';");
@@ -40,6 +52,13 @@ public class H2DB_Manager {
 
     static ResultSet getIndexesFor(Connection connection, String user) throws SQLException {
         Statement stmt = connection.createStatement();
+        
+        ResultSet rs = stmt.executeQuery("select SCHEMA_OWNER from information_schema.schemata WHERE SCHEMA_NAME = 'PUBLIC';");
+        if(rs.next() && rs.getString("SCHEMA_OWNER").equals(user.toUpperCase()))
+            return stmt.executeQuery("select S.SCHEMA_NAME, I.INDEX_NAME from information_schema.schemata S\n" +
+"      inner join information_schema.indexes I on I.TABLE_SCHEMA = S.SCHEMA_NAME \n" +
+"          WHERE SCHEMA_NAME != 'PUBLIC';");
+        
         return stmt.executeQuery("select S.SCHEMA_NAME, I.INDEX_NAME from information_schema.schemata S\n" +
 "      inner join information_schema.indexes I on I.TABLE_SCHEMA = S.SCHEMA_NAME \n" +
 "          WHERE SCHEMA_OWNER = '"+user.toUpperCase()+"';");
@@ -56,6 +75,30 @@ public class H2DB_Manager {
         return stmt.executeQuery("select TABLE_SCHEMA, INDEX_NAME, COLUMN_NAME, ASC_OR_DESC \n" +
 "from information_schema.indexes where table_SCHEMA = '"+schema+"'\n" +
 "and index_name = '"+indexName+"';");
+    }
+
+    static String getUserOwnerOfSchema(ConnectionData conn, String schema) throws SQLException {
+        Statement stmt = conn.getConnection().createStatement();
+        ResultSet rs = stmt.executeQuery("select SCHEMA_OWNER from information_schema.schemata WHERE SCHEMA_NAME = '"+schema+"';");
+        if(rs.next())
+            return rs.getString("SCHEMA_OWNER");
+        return "";
+    }
+
+    static ResultSet getDDLForTable(Connection connection, String schema, String table) throws SQLException {
+        Statement stmt = connection.createStatement();
+        return stmt.executeQuery("select SQL from information_schema.tables \n" +
+"where TABLE_SCHEMA != 'INFORMATION_SCHEMA' \n" +
+"AND TABLE_SCHEMA = '"+schema+"' \n" +
+"AND TABLE_NAME = '"+table+"';");
+    }
+
+    static ResultSet getDDLForIndex(Connection connection, String schema, String index) throws SQLException {
+        Statement stmt = connection.createStatement();
+        return stmt.executeQuery("select SQL from information_schema.indexes \n" +
+"where TABLE_SCHEMA != 'INFORMATION_SCHEMA' \n" +
+"AND TABLE_SCHEMA = '"+schema+"' \n" +
+"AND INDEX_NAME = '"+index+"';");
     }
     
 }

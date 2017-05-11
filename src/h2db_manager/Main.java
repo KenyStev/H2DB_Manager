@@ -5,46 +5,26 @@
  */
 package h2db_manager;
 
-import java.awt.Component;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.InputMethodEvent;
-import java.awt.event.InputMethodListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Collection;
-import java.util.Dictionary;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.scene.input.MouseButton;
-import javafx.scene.layout.GridPane;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextPane;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
-import org.h2.table.Table;
 
 /**
  *
@@ -56,6 +36,9 @@ public class Main extends javax.swing.JFrame {
     private DefaultMutableTreeNode root;
     private JTable columnsPane;
     private JScrollPane scrollpaneColumns;
+    private JScrollPane scrollpaneData;
+    private JScrollPane scrollpaneDDL;
+    private JTextPane ShowSQLtextPlane;
 
     /**
      * Creates new form Main
@@ -72,64 +55,29 @@ public class Main extends javax.swing.JFrame {
             @Override
             public void valueChanged(TreeSelectionEvent tse) {
                 updateColumnsTables();
+                updateShowSQL();
             }
         });
         
         jScrollPane3.setViewportView(ConnectionsTree);
         map = new HashMap<String,ConnectionData>();
         
+        ShowSQLtextPlane = new JTextPane();
         scrollpaneColumns = new JScrollPane();
-//        columnsPane = new JTable();
-        
+        scrollpaneData = new JScrollPane();
+        scrollpaneDDL = new JScrollPane();
+        scrollpaneDDL.setViewportView(ShowSQLtextPlane);
         TabOptions.addTab("Columns", scrollpaneColumns);
-        TabOptions.addTab("Data", new JPanel());
-        TabOptions.addTab("SQL", new JPanel());
+        TabOptions.addTab("Data", scrollpaneData);
+        TabOptions.addTab("DDL", scrollpaneDDL);
         
         TabOptions.addChangeListener(new ChangeListener() {
             
             @Override
             public void stateChanged(ChangeEvent ce) {
                 updateColumnsTables();
-//                System.out.println(TabOptions.getSelectedIndex());
-//                System.out.println(TabOptions.getTitleAt(TabOptions.getSelectedIndex()));
-//                JScrollPane jscrollpane = new JScrollPane();
-//                JTable jTable1 = new JTable();
-//                jTable1.setModel(new javax.swing.table.DefaultTableModel(
-//                    new Object [][] {
-//                        {null, null, null, null},
-//                        {null, null, null, null},
-//                        {null, null, null, null},
-//                        {null, null, null, null}
-//                    },
-//                    new String [] {
-//                        "Title 1", "Title 2", "Title 3", "Title 4"
-//                    }
-//                ));
-//                jscrollpane.setViewportView(jTable1);
-//                columnsPane.removeAll();
-//                columnsPane.add(jscrollpane);
             }
         });
-        
-//        ConnectionsTree.addTreeSelectionListener(new TreeSelectionListener() {
-//            @Override
-//            public void valueChanged(TreeSelectionEvent tse) {
-//                DefaultMutableTreeNode node = (DefaultMutableTreeNode)ConnectionsTree.getLastSelectedPathComponent();
-//                System.out.println(node);
-//            }
-//        });
-//        MouseAdapter c = new MouseAdapter(){
-//            @Override
-//            public void mouseClicked(MouseEvent me) {
-//                DefaultMutableTreeNode node = (DefaultMutableTreeNode)ConnectionsTree.getLastSelectedPathComponent();
-//                if(SwingUtilities.isRightMouseButton(me))
-//                {
-//                    
-//                }
-//            }
-//            
-//        };
-//        ConnectionsTree.addMouseListener(c);
     }
 
     /**
@@ -324,7 +272,7 @@ public class Main extends javax.swing.JFrame {
                     columnsPane = new JTable(ConnectionData.buildTableModel(rs));
                     scrollpaneColumns.setViewportView(columnsPane);
                 }catch(SQLException ex){
-                    
+                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Something went wrong",JOptionPane.ERROR_MESSAGE);
                 }
             }else if("Indexes".equals(node.getParent().toString())){
                 ConnectionData conn = map.get(node.getPath()[1].toString());
@@ -332,14 +280,53 @@ public class Main extends javax.swing.JFrame {
                     columnsPane = new JTable(ConnectionData.buildTableModel(rs));
                     scrollpaneColumns.setViewportView(columnsPane);
                 }catch(SQLException ex){
-                    
+                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Something went wrong",JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
     }
-    /**
-     * @param args the command line arguments
-     */
+    
+    private void updateShowSQL() {
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode)ConnectionsTree.getLastSelectedPathComponent();
+        String sql = "";
+        if(node!=null && node.getParent() != null){    
+            if ("Schemas".equals(node.getParent().toString()) && !("INFORMATION_SCHEMA".equals(node.toString()))) {
+                sql = "CREATE SCHEMA IF NOT EXISTS "+node.toString();
+                
+                try {
+                    String user = H2DB_Manager.getUserOwnerOfSchema(map.get(node.getPath()[1].toString()),node.toString());
+                    if(user.length()>0)
+                        sql+=" AUTHORIZATION "+user;
+                    
+                } catch (SQLException ex) {
+                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                }finally{
+                    sql+=";";
+                }
+//                ShowSQLtextPlane.setText(sql);
+//                scrollpaneDDL.setViewportView(ShowSQLtextPlane);
+            }else if("Tables".equals(node.getParent().toString())){
+                try(ResultSet rs = H2DB_Manager.getDDLForTable(map.get(node.getPath()[1].toString()).getConnection()
+                        ,node.getPath()[3].toString(),node.getPath()[5].toString())){
+                    if(rs.next())
+                        sql = rs.getString("SQL") +";";
+                }catch(SQLException ex){
+                    
+                }
+                
+            }else if("Indexes".equals(node.getParent().toString())){
+                try(ResultSet rs = H2DB_Manager.getDDLForIndex(map.get(node.getPath()[1].toString()).getConnection()
+                        ,node.getPath()[3].toString(),node.getPath()[5].toString())){
+                    if(rs.next())
+                        sql = rs.getString("SQL")+";";
+                }catch(SQLException ex){
+                    
+                }
+            }
+        }
+        ShowSQLtextPlane.setText(sql);
+    }
+    
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -404,8 +391,8 @@ public class Main extends javax.swing.JFrame {
             while (rs.next()) {
                 System.out.println(rs.getString("name"));
             }
-        }catch(Exception e){
-            
+        }catch(SQLException ex){
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Something went wrong",JOptionPane.ERROR_MESSAGE);
         }
     }
 }
