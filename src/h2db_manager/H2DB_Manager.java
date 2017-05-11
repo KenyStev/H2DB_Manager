@@ -134,5 +134,22 @@ public class H2DB_Manager {
 "WHERE ALIAS_SCHEMA = '"+schema.toUpperCase()+"' \n" +
 "AND ALIAS_NAME = '"+alias_name.toUpperCase()+"';");
     }
+
+    static ResultSet getViews(Connection connection) throws SQLException {
+        Statement stmt = connection.createStatement();
+        return stmt.executeQuery("select TABLE_SCHEMA, TABLE_NAME from information_schema.views;");
+    }
+
+    static ResultSet getColumnsForFuncion(Connection connection, String toString, String toString0) throws SQLException {
+        Statement stmt = connection.createStatement();
+        return stmt.executeQuery("select * from information_schema.function_columns \n" +
+"where alias_schema = 'PUBLIC' \n" +
+"AND ALIAS_NAME = 'GET_DDL_FROM_TABLE';");
+    }
+    
+    static ResultSet getColumnsForView(Connection connection, String schema, String table) throws SQLException {
+        Statement stmt = connection.createStatement();
+        return stmt.executeQuery("show columns from "+table+" FROM "+schema+";");
+    }
     
 }

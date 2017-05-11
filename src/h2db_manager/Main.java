@@ -326,6 +326,22 @@ public class Main extends javax.swing.JFrame {
                 }catch(SQLException ex){
                     JOptionPane.showMessageDialog(this, ex.getMessage(), "Something went wrong",JOptionPane.ERROR_MESSAGE);
                 }
+            }else if("Functions".equals(node.getParent().toString())){
+                ConnectionData conn = map.get(node.getPath()[1].toString());
+                try(ResultSet rs = H2DB_Manager.getColumnsForFuncion(conn.getConnection(),node.getPath()[3].toString(),node.getPath()[5].toString());){
+                    columnsPane = new JTable(ConnectionData.buildTableModel(rs));
+                    scrollpaneColumns.setViewportView(columnsPane);
+                }catch(SQLException ex){
+                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Something went wrong",JOptionPane.ERROR_MESSAGE);
+                }
+            }else if("Views".equals(node.getParent().toString())){
+                ConnectionData conn = map.get(node.getPath()[1].toString());
+                try(ResultSet rs = H2DB_Manager.getColumnsForView(conn.getConnection(),node.getPath()[3].toString(),node.getPath()[5].toString());){
+                    columnsPane = new JTable(ConnectionData.buildTableModel(rs));
+                    scrollpaneColumns.setViewportView(columnsPane);
+                }catch(SQLException ex){
+                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Something went wrong",JOptionPane.ERROR_MESSAGE);
+                }
             }
         }
     }

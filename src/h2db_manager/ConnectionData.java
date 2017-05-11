@@ -78,6 +78,7 @@ public class ConnectionData {
             initTables();
             initIndexes();
             initFunctions();
+            initViews();
         }
 
     public Connection getConnection(){
@@ -161,6 +162,27 @@ public class ConnectionData {
                 }
                 if(functions!=null)
                     functions.add(new DefaultMutableTreeNode(rs.getString("ALIAS_NAME")));
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(ConnectionData.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void initViews() {
+        DefaultMutableTreeNode functions = null;
+        try(ResultSet rs = H2DB_Manager.getViews(connection);) {
+            String schemaName = "";
+            while (rs.next()) {
+                String nextSchemaName = rs.getString("TABLE_SCHEMA");
+                DefaultMutableTreeNode schema = schemasMap.get(nextSchemaName);
+                if(schema!=null && !schemaName.equals(nextSchemaName))
+                {
+                    schemaName = nextSchemaName;
+                    functions = new DefaultMutableTreeNode("Views");
+                    schema.add(functions);
+                }
+                if(functions!=null)
+                    functions.add(new DefaultMutableTreeNode(rs.getString("TABLE_NAME")));
             }
         } catch (SQLException ex) {
             Logger.getLogger(ConnectionData.class.getName()).log(Level.SEVERE, null, ex);
