@@ -391,6 +391,14 @@ public class Main extends javax.swing.JFrame {
                     sql="";
                     JOptionPane.showMessageDialog(this, ex.getMessage(), "Something went wrong",JOptionPane.ERROR_MESSAGE);
                 }
+            }else if("Views".equals(node.getParent().toString())){
+                try(ResultSet rs = H2DB_Manager.getDDLForView(map.get(node.getPath()[1].toString()).getConnection()
+                        ,node.getPath()[3].toString(),node.getPath()[5].toString())){
+                    if(rs.next())
+                        sql = rs.getString("VIEW_DEFINITION")+";";
+                }catch(SQLException ex){
+                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Something went wrong",JOptionPane.ERROR_MESSAGE);
+                }
             }
         }
         ShowSQLtextPlane.setText(sql);

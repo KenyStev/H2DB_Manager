@@ -156,5 +156,12 @@ public class H2DB_Manager {
         Statement stmt = connection.createStatement();
         return stmt.executeQuery("select * from "+schema+"."+table+";");
     }
+
+    static ResultSet getDDLForView(Connection connection, String schema, String table) throws SQLException {
+        Statement stmt = connection.createStatement();
+        return stmt.executeQuery("select VIEW_DEFINITION from information_schema.views\n" +
+"where table_schema = '"+schema+"'\n" +
+"AND TABLE_NAME = '"+table+"';");
+    }
     
 }
