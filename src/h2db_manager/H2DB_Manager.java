@@ -31,7 +31,8 @@ public class H2DB_Manager {
         
         ResultSet rs = stmt.executeQuery("select SCHEMA_OWNER from information_schema.schemata WHERE SCHEMA_NAME = 'PUBLIC';");
         if(rs.next() && rs.getString("SCHEMA_OWNER").equals(user.toUpperCase()))
-            return stmt.executeQuery("select SCHEMA_NAME from information_schema.schemata where SCHEMA_NAME != 'PUBLIC';");
+            return stmt.executeQuery("select SCHEMA_NAME from information_schema.schemata;");
+//            return stmt.executeQuery("select SCHEMA_NAME from information_schema.schemata where SCHEMA_NAME != 'PUBLIC';");
         
         return stmt.executeQuery("select SCHEMA_NAME from information_schema.schemata WHERE SCHEMA_OWNER = '"+user.toUpperCase()+"';");
     }
@@ -110,6 +111,28 @@ public class H2DB_Manager {
     static ResultSet getDataFromTable(Connection connection, String schema, String table) throws SQLException {
         Statement stmt = connection.createStatement();
         return stmt.executeQuery("select * from "+schema+"."+table+";");
+    }
+
+    static ResultSet getFunctionsFor(Connection connection, String user) throws SQLException {
+        Statement stmt = connection.createStatement();
+        
+//        ResultSet rs = stmt.executeQuery("select SCHEMA_OWNER from information_schema.schemata WHERE SCHEMA_NAME = 'PUBLIC';");
+//        if(rs.next() && rs.getString("SCHEMA_OWNER").equals(user.toUpperCase()))
+//            return stmt.executeQuery("select S.SCHEMA_NAME, I.INDEX_NAME from information_schema.schemata S\n" +
+//"      inner join information_schema.indexes I on I.TABLE_SCHEMA = S.SCHEMA_NAME \n" +
+//"          WHERE SCHEMA_NAME != 'PUBLIC';");
+        
+        return stmt.executeQuery("select FA.ALIAS_SCHEMA, fa.ALIAS_NAME from information_schema.function_aliases FA\n" +
+"INNER JOIN INFORMATION_SCHEMA.SCHEMATA S\n" +
+"ON FA.ALIAS_SCHEMA = S.SCHEMA_NAME\n" +
+"WHERE S.SCHEMA_OWNER = '"+user.toUpperCase()+"';");
+    }
+
+    static ResultSet getDDLForFunction(Connection connection, String schema, String alias_name) throws SQLException {
+        Statement stmt = connection.createStatement();
+        return stmt.executeQuery("select ALIAS_NAME, SOURCE from information_schema.function_aliases \n" +
+"WHERE ALIAS_SCHEMA = '"+schema.toUpperCase()+"' \n" +
+"AND ALIAS_NAME = '"+alias_name.toUpperCase()+"';");
     }
     
 }

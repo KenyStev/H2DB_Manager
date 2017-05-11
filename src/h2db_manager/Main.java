@@ -334,7 +334,8 @@ public class Main extends javax.swing.JFrame {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode)ConnectionsTree.getLastSelectedPathComponent();
         String sql = "";
         if(node!=null && node.getParent() != null){    
-            if ("Schemas".equals(node.getParent().toString()) && !("INFORMATION_SCHEMA".equals(node.toString()))) {
+            if ("Schemas".equals(node.getParent().toString()) && !("INFORMATION_SCHEMA".equals(node.toString())
+                    && !("PUBLIC".equals(node.toString())))) {
                 sql = "CREATE SCHEMA IF NOT EXISTS "+node.toString();
                 
                 try {
@@ -362,6 +363,16 @@ public class Main extends javax.swing.JFrame {
                     if(rs.next())
                         sql = rs.getString("SQL")+";";
                 }catch(SQLException ex){
+                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Something went wrong",JOptionPane.ERROR_MESSAGE);
+                }
+            }else if("Functions".equals(node.getParent().toString())){
+                sql = "CREATE ALIAS ";
+                try(ResultSet rs = H2DB_Manager.getDDLForFunction(map.get(node.getPath()[1].toString()).getConnection()
+                        ,node.getPath()[3].toString(),node.getPath()[5].toString())){
+                    if(rs.next())
+                        sql = rs.getString("ALIAS_NAME") + " AS $$\n" + rs.getString("SOURCE")+"\n$$;";
+                }catch(SQLException ex){
+                    sql="";
                     JOptionPane.showMessageDialog(this, ex.getMessage(), "Something went wrong",JOptionPane.ERROR_MESSAGE);
                 }
             }
