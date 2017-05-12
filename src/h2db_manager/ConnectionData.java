@@ -28,6 +28,7 @@ public class ConnectionData {
     private DefaultMutableTreeNode treeNode;
     private final String user;
     private HashMap<String, DefaultMutableTreeNode> schemasMap;
+    private HashMap<String, DefaultMutableTreeNode> usersMap;
 
     ConnectionData(String cn,String user, Connection conn) {
         connectionName = cn;
@@ -73,12 +74,14 @@ public class ConnectionData {
 
         public void initDataBaseObjects() {
             schemasMap = new HashMap<>();
+            usersMap  = new HashMap<>();
             treeNode.removeAllChildren();
             initSchemas();
             initTables();
             initIndexes();
             initFunctions();
             initViews();
+            initUsers();
         }
 
     public Connection getConnection(){
@@ -183,6 +186,20 @@ public class ConnectionData {
                 }
                 if(functions!=null)
                     functions.add(new DefaultMutableTreeNode(rs.getString("TABLE_NAME")));
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(ConnectionData.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private void initUsers() {
+        DefaultMutableTreeNode users = new DefaultMutableTreeNode("Users");
+        treeNode.add(users);
+        try(ResultSet rs = H2DB_Manager.getUsersFor(connection);) {
+            while (rs.next()) {
+                String userName = rs.getString("NAME");
+                usersMap.put(userName,new DefaultMutableTreeNode(userName));
+                users.add(usersMap.get(userName));
             }
         } catch (SQLException ex) {
             Logger.getLogger(ConnectionData.class.getName()).log(Level.SEVERE, null, ex);

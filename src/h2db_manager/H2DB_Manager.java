@@ -163,5 +163,10 @@ public class H2DB_Manager {
 "where table_schema = '"+schema+"'\n" +
 "AND TABLE_NAME = '"+table+"';");
     }
+
+    static ResultSet getUsersFor(Connection connection) throws SQLException {
+        Statement stmt = connection.createStatement();
+        return stmt.executeQuery("select * from information_schema.users;");
+    }
     
 }

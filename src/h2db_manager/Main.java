@@ -116,10 +116,17 @@ public class Main extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         btnAddConnection = new javax.swing.JButton();
         btnCloseConnection = new javax.swing.JButton();
+        btnDropObject = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
         ConnectionsTree = new javax.swing.JTree();
         jMenuBar2 = new javax.swing.JMenuBar();
         jMenu4 = new javax.swing.JMenu();
+        btnCreateSchema = new javax.swing.JMenuItem();
+        btnCreateTable = new javax.swing.JMenuItem();
+        btnCreateIndex = new javax.swing.JMenuItem();
+        btnCreateFunction = new javax.swing.JMenuItem();
+        btnCreateView = new javax.swing.JMenuItem();
+        btnCreateUser = new javax.swing.JMenuItem();
         jMenu5 = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -173,9 +180,17 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
+        btnDropObject.setText("Drop");
+        btnDropObject.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDropObjectActionPerformed(evt);
+            }
+        });
+
         ConnectionOptionsPane.setLayer(jLabel1, javax.swing.JLayeredPane.DEFAULT_LAYER);
         ConnectionOptionsPane.setLayer(btnAddConnection, javax.swing.JLayeredPane.DEFAULT_LAYER);
         ConnectionOptionsPane.setLayer(btnCloseConnection, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        ConnectionOptionsPane.setLayer(btnDropObject, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
         javax.swing.GroupLayout ConnectionOptionsPaneLayout = new javax.swing.GroupLayout(ConnectionOptionsPane);
         ConnectionOptionsPane.setLayout(ConnectionOptionsPaneLayout);
@@ -187,8 +202,10 @@ public class Main extends javax.swing.JFrame {
                     .addGroup(ConnectionOptionsPaneLayout.createSequentialGroup()
                         .addComponent(btnAddConnection)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnCloseConnection)))
-                .addGap(0, 93, Short.MAX_VALUE))
+                        .addComponent(btnCloseConnection)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnDropObject)))
+                .addGap(0, 32, Short.MAX_VALUE))
         );
         ConnectionOptionsPaneLayout.setVerticalGroup(
             ConnectionOptionsPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -197,7 +214,8 @@ public class Main extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(ConnectionOptionsPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnAddConnection)
-                    .addComponent(btnCloseConnection)))
+                    .addComponent(btnCloseConnection)
+                    .addComponent(btnDropObject)))
         );
 
         jScrollPane3.setViewportView(ConnectionsTree);
@@ -220,6 +238,61 @@ public class Main extends javax.swing.JFrame {
         jSplitPane1.setTopComponent(jPanel1);
 
         jMenu4.setText("File");
+        jMenu4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenu4ActionPerformed(evt);
+            }
+        });
+
+        btnCreateSchema.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
+        btnCreateSchema.setText("Create Schema");
+        btnCreateSchema.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCreateSchemaActionPerformed(evt);
+            }
+        });
+        jMenu4.add(btnCreateSchema);
+
+        btnCreateTable.setText("Create Table");
+        btnCreateTable.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCreateTableActionPerformed(evt);
+            }
+        });
+        jMenu4.add(btnCreateTable);
+
+        btnCreateIndex.setText("Create Index");
+        btnCreateIndex.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCreateIndexActionPerformed(evt);
+            }
+        });
+        jMenu4.add(btnCreateIndex);
+
+        btnCreateFunction.setText("Create Function");
+        btnCreateFunction.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCreateFunctionActionPerformed(evt);
+            }
+        });
+        jMenu4.add(btnCreateFunction);
+
+        btnCreateView.setText("Create View");
+        btnCreateView.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCreateViewActionPerformed(evt);
+            }
+        });
+        jMenu4.add(btnCreateView);
+
+        btnCreateUser.setText("Create User");
+        btnCreateUser.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCreateUserActionPerformed(evt);
+            }
+        });
+        jMenu4.add(btnCreateUser);
+
         jMenuBar2.add(jMenu4);
 
         jMenu5.setText("Edit");
@@ -299,6 +372,128 @@ public class Main extends javax.swing.JFrame {
             }
         }
     }//GEN-LAST:event_btnPlayQueryActionPerformed
+
+    private void jMenu4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenu4ActionPerformed
+        
+    }//GEN-LAST:event_jMenu4ActionPerformed
+
+    private void btnCreateSchemaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateSchemaActionPerformed
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode)ConnectionsTree.getLastSelectedPathComponent();
+        String sql = "";
+        if(node!=null && node.getLevel()>0){
+            sql = DDL_Templates.getDDLForCreateSchema(map.get(node.getPath()[1].toString()));
+        }
+        SQLCommandsPane.setText(sql);
+    }//GEN-LAST:event_btnCreateSchemaActionPerformed
+
+    private void btnCreateTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateTableActionPerformed
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode)ConnectionsTree.getLastSelectedPathComponent();
+        String sql = "",schema="";
+        if(node!=null && node.getLevel()>0){
+            if (node.getLevel()>=3) {
+                schema = node.getPath()[3].toString();
+            }
+            
+            sql = DDL_Templates.getDDLForCreateTable(map.get(node.getPath()[1].toString()),schema);
+        }
+        SQLCommandsPane.setText(sql);
+    }//GEN-LAST:event_btnCreateTableActionPerformed
+
+    private void btnCreateIndexActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateIndexActionPerformed
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode)ConnectionsTree.getLastSelectedPathComponent();
+        String sql = "",schema="",table="";
+        if(node!=null && node.getLevel()>0){
+            if (node.getLevel()>=3) {
+                schema = node.getPath()[3].toString();
+            }
+            
+            if (node.getLevel()>=5 && "Tables".equals(node.getPath()[4].toString())) {
+                table = node.getPath()[5].toString();
+            }
+            
+            sql = DDL_Templates.getDDLForCreateIndex(map.get(node.getPath()[1].toString()),schema,table);
+        }
+        SQLCommandsPane.setText(sql);
+    }//GEN-LAST:event_btnCreateIndexActionPerformed
+
+    private void btnCreateFunctionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateFunctionActionPerformed
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode)ConnectionsTree.getLastSelectedPathComponent();
+        String sql = "",schema="";
+        if(node!=null && node.getLevel()>0){
+            if (node.getLevel()>=3) {
+                schema = node.getPath()[3].toString();
+            }
+            
+            sql = DDL_Templates.getDDLForCreateFunction(map.get(node.getPath()[1].toString()),schema);
+        }
+        SQLCommandsPane.setText(sql);
+    }//GEN-LAST:event_btnCreateFunctionActionPerformed
+
+    private void btnCreateViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateViewActionPerformed
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode)ConnectionsTree.getLastSelectedPathComponent();
+        String sql = "",schema="";
+        if(node!=null && node.getLevel()>0){
+            if (node.getLevel()>=3) {
+                schema = node.getPath()[3].toString();
+            }
+            
+            sql = DDL_Templates.getDDLForCreateView(map.get(node.getPath()[1].toString()),schema);
+        }
+        SQLCommandsPane.setText(sql);
+    }//GEN-LAST:event_btnCreateViewActionPerformed
+
+    private void btnCreateUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateUserActionPerformed
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode)ConnectionsTree.getLastSelectedPathComponent();
+        String sql = "";
+        if(node!=null && node.getLevel()>0){
+            sql = DDL_Templates.getDDLForCreateUser(map.get(node.getPath()[1].toString()));
+        }
+        SQLCommandsPane.setText(sql);
+    }//GEN-LAST:event_btnCreateUserActionPerformed
+
+    private void btnDropObjectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDropObjectActionPerformed
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode)ConnectionsTree.getLastSelectedPathComponent();
+        String sql = "",schema="",table="";
+        if (node != null && node.getParent() != null) {
+            if(null != node.getParent().toString())
+                switch (node.getParent().toString()) {
+                    case "Schemas":
+                        sql = DDL_Templates.getDDLForDropSchema(node.toString());
+                        break;
+                    case "Tables":
+                        if (node.getLevel()>=3) {
+                            schema = node.getPath()[3].toString();
+                        }
+                        sql = DDL_Templates.getDDLForDropTable(node.toString(),schema);
+                        break;
+                    case "Functions":
+                        if (node.getLevel()>=3) {
+                            schema = node.getPath()[3].toString();
+                        }
+                        sql = DDL_Templates.getDDLForDropFunction(node.toString(),schema);
+                        break;
+                    case "Views":
+                        if (node.getLevel()>=3) {
+                            schema = node.getPath()[3].toString();
+                        }
+                        sql = DDL_Templates.getDDLForDropView(node.toString(),schema);
+                        break;
+                    case "Indexes":
+                        if (node.getLevel()>=3) {
+                            schema = node.getPath()[3].toString();
+                        }
+                        sql = DDL_Templates.getDDLForDropIndex(node.toString(),schema);
+                        break;
+                    case "Users":
+                        sql = DDL_Templates.getDDLForDropUser(node.toString());
+                        break;
+                    default:
+                        break;
+                }
+        }
+        TabOptions.setSelectedIndex(0);
+        SQLCommandsPane.setText(sql);
+    }//GEN-LAST:event_btnDropObjectActionPerformed
 
     private void updateColumnsTables() {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode)ConnectionsTree.getLastSelectedPathComponent();
@@ -399,6 +594,8 @@ public class Main extends javax.swing.JFrame {
                 }catch(SQLException ex){
                     JOptionPane.showMessageDialog(this, ex.getMessage(), "Something went wrong",JOptionPane.ERROR_MESSAGE);
                 }
+            }if ("Users".equals(node.getParent().toString())) {
+                sql = "CREATE USER IF NOT EXISTS "+node.toString()+";";
             }
         }
         ShowSQLtextPlane.setText(sql);
@@ -467,6 +664,13 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JTabbedPane TabOptions;
     private javax.swing.JButton btnAddConnection;
     private javax.swing.JButton btnCloseConnection;
+    private javax.swing.JMenuItem btnCreateFunction;
+    private javax.swing.JMenuItem btnCreateIndex;
+    private javax.swing.JMenuItem btnCreateSchema;
+    private javax.swing.JMenuItem btnCreateTable;
+    private javax.swing.JMenuItem btnCreateUser;
+    private javax.swing.JMenuItem btnCreateView;
+    private javax.swing.JButton btnDropObject;
     private javax.swing.JButton btnPlayQuery;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLayeredPane jLayeredPane1;
