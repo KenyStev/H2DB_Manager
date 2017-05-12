@@ -5,6 +5,8 @@
  */
 package h2db_manager;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -26,6 +28,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.text.LayeredHighlighter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -52,6 +55,8 @@ public class Main extends javax.swing.JFrame {
     private JButton btnEditData;
     private JScrollPane SQLCommandsScroll;
     private JTable dataFromTable;
+    private JButton btnInsertData;
+    private JButton btnDeleteData;
 
     /**
      * Creates new form Main
@@ -710,6 +715,8 @@ public class Main extends javax.swing.JFrame {
         SQLOutputScroll = new javax.swing.JScrollPane();
         SQLOutput = new javax.swing.JTable();
         btnEditData = new javax.swing.JButton();
+        btnInsertData = new javax.swing.JButton();
+        btnDeleteData = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -723,10 +730,110 @@ public class Main extends javax.swing.JFrame {
 
         SQLOutputScroll.setViewportView(SQLOutput);
 
+        btnInsertData.setText("Insert");
         btnEditData.setText("Edit");
+        btnDeleteData.setText("Delete");
+        
+        btnInsertData.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode)ConnectionsTree.getLastSelectedPathComponent();
+                int column = 0;
+                int row = SQLOutput.getSelectedRow();
+                int col = SQLOutput.getSelectedColumn();
+                String sql = "",schema="",table="";
+                if(row>=0){
+                    int cols = SQLOutput.getModel().getColumnCount();
+                    String[] values = new String[cols], columns = new String[cols];
+                    
+                    for(column=0;column<cols;column++){
+                        values[column] = SQLOutput.getModel().getValueAt(row, column).toString();
+                        columns[column] = SQLOutput.getModel().getColumnName(column);
+                    }
+                    
+                    if(node!=null){
+                        if (node.getLevel()>=3) {
+                            schema = node.getPath()[3].toString();
+                        }
+                        if (node.getLevel()>=5 && "Tables".equals(node.getPath()[4].toString())) {
+                            table = node.getPath()[5].toString();
+                        }
+                    }
+                    
+                    sql = DDL_Templates.getDDLForInsertTable(schema,table,columns,values);
+                }
+                SQLCommandsPane.setText(sql);
+            }   
+        });
+        
+        btnEditData.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode)ConnectionsTree.getLastSelectedPathComponent();
+                int column = 0;
+                int row = SQLOutput.getSelectedRow();
+                int col = SQLOutput.getSelectedColumn();
+                String sql = "",schema="",table="";
+                if(row>=0){
+                    int cols = SQLOutput.getModel().getColumnCount();
+                    String[] values = new String[cols], columns = new String[cols];
+                    
+                    for(column=0;column<cols;column++){
+                        values[column] = SQLOutput.getModel().getValueAt(row, column).toString();
+                        columns[column] = SQLOutput.getModel().getColumnName(column);
+                    }
+                    
+                    if(node!=null){
+                        if (node.getLevel()>=3) {
+                            schema = node.getPath()[3].toString();
+                        }
+                        if (node.getLevel()>=5 && "Tables".equals(node.getPath()[4].toString())) {
+                            table = node.getPath()[5].toString();
+                        }
+                    }
+                    
+                    sql = DDL_Templates.getDDLForUpdateTable(schema,table,columns,values,SQLOutput.getModel().getColumnName(col),SQLOutput.getModel().getValueAt(row, col).toString());
+                }
+                SQLCommandsPane.setText(sql);
+            }
+        });
+        
+        btnDeleteData.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode)ConnectionsTree.getLastSelectedPathComponent();
+                int column = 0;
+                int row = SQLOutput.getSelectedRow();
+                int col = SQLOutput.getSelectedColumn();
+                String sql = "",schema="",table="";
+                if(row>=0){
+                    int cols = SQLOutput.getModel().getColumnCount();
+                    String[] values = new String[cols], columns = new String[cols];
+                    
+                    for(column=0;column<cols;column++){
+                        values[column] = SQLOutput.getModel().getValueAt(row, column).toString();
+                        columns[column] = SQLOutput.getModel().getColumnName(column);
+                    }
+                    
+                    if(node!=null){
+                        if (node.getLevel()>=3) {
+                            schema = node.getPath()[3].toString();
+                        }
+                        if (node.getLevel()>=5 && "Tables".equals(node.getPath()[4].toString())) {
+                            table = node.getPath()[5].toString();
+                        }
+                    }
+                    
+                    sql = DDL_Templates.getDDLForDeleteTable(schema,table,SQLOutput.getModel().getColumnName(col),SQLOutput.getModel().getValueAt(row, col).toString());
+                }
+                SQLCommandsPane.setText(sql);
+            }   
+        });
 
         SQLOutputLayer.setLayer(SQLOutputScroll, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        SQLOutputLayer.setLayer(btnInsertData, javax.swing.JLayeredPane.DEFAULT_LAYER);
         SQLOutputLayer.setLayer(btnEditData, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        SQLOutputLayer.setLayer(btnDeleteData, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
         javax.swing.GroupLayout jLayeredPane3Layout = new javax.swing.GroupLayout(SQLOutputLayer);
         SQLOutputLayer.setLayout(jLayeredPane3Layout);
@@ -734,15 +841,22 @@ public class Main extends javax.swing.JFrame {
             jLayeredPane3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(SQLOutputScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
             .addGroup(jLayeredPane3Layout.createSequentialGroup()
+                .addComponent(btnInsertData)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnEditData)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnDeleteData))
+            .addGap(0, 0, Short.MAX_VALUE)
         );
         jLayeredPane3Layout.setVerticalGroup(
             jLayeredPane3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jLayeredPane3Layout.createSequentialGroup()
-                .addComponent(btnEditData)
+            .addGroup(jLayeredPane3Layout.createSequentialGroup()
+                .addGroup(jLayeredPane3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnInsertData)
+                    .addComponent(btnEditData)
+                    .addComponent(btnDeleteData))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(SQLOutputScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE))
+            .addComponent(SQLOutputScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE))
         );
 
         SQLSplitSection.setRightComponent(SQLOutputLayer);

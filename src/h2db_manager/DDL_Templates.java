@@ -77,5 +77,33 @@ class DDL_Templates {
     static String getDDLForDropUser(String user) {
         return "DROP USER [ IF EXISTS ] "+((user.length()>0)?user.toUpperCase():"<userName>")+";";
     }
+
+    static String getDDLForUpdateTable(String schema, String table, String[] columns, String[] values,String selectedCol,String selectedValue) {
+        String sql = "UPDATE "+((schema.length()>0)?schema.toUpperCase()+".":"<schemaName>.")+((table.length()>0)?table.toUpperCase():"<tableName>")+" [ [ AS ] newTableAlias ] SET\n";
+        
+        for(int i=0; i<columns.length;i++){
+            sql += columns[i]+" = "+values[i]+" ";
+        }
+        
+        return sql+" WHERE "+selectedCol + " = "+ selectedValue+";";
+    }
+
+    static String getDDLForInsertTable(String schema, String table, String[] columns, String[] values) {
+        String sql =  "INSERT INTO "+((schema.length()>0)?schema.toUpperCase()+".":"<schemaName>.")+((table.length()>0)?table.toUpperCase():"<tableName>")+"\n" +
+                    " VALUES (";
+        for(int i=0; i<columns.length;i++){
+            sql += values[i];
+            if(i<columns.length-1)
+                sql+=",";
+        }
+        
+        return sql+");";
+    }
+
+    static String getDDLForDeleteTable(String schema, String table, String selectedCol, String selectedValue) {
+        String sql = "DELETE [ TOP term ] FROM "+((schema.length()>0)?schema.toUpperCase()+".":"<schemaName>.")+((table.length()>0)?table.toUpperCase():"<tableName>\n ")
+                + " WHERE "+selectedCol + " = "+ selectedValue+";";
+        return sql;
+    }
     
 }
